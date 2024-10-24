@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String            @id @default(uuid())
+  name            String
+  email           String            @unique
+  password        String // Adicionando campo de senha
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  subjects        Subject[]
+  workouts        Workout[]
+  studyProgress   StudyProgress[]
+  workoutProgress WorkoutProgress[]
+  UserPreferences UserPreferences[]
+}
+
+model UserPreferences {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  freeTime       String // Exemplo: "2 horas" ou "30 minutos"
+  daysAvailable  Int // Número de dias disponíveis na semana (0-7)
+  availableTimes String // Exemplo: "18:00-20:00" ou "10:00-12:00"
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Subject {
+  id            String          @id @default(uuid())
+  name          String
+  userId        String
+  user          User            @relation(fields: [userId], references: [id])
+  StudyProgress StudyProgress[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model StudyProgress {
+  id              String   @id @default(uuid())
+  subjectId       String
+  date            DateTime @default(now())
+  progress        Int // Exemplo: % de progresso
+  subjectsStudied Int // Número de matérias estudadas na semana
+  subject         Subject  @relation(fields: [subjectId], references: [id])
+  userId          String?
+  User            User?    @relation(fields: [userId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Workout {
+  id              String            @id @default(uuid())
+  name            String
+  userId          String
+  user            User              @relation(fields: [userId], references: [id])
+  WorkoutProgress WorkoutProgress[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model WorkoutProgress {
+  id           String   @id @default(uuid())
+  workoutId    String
+  date         DateTime @default(now())
+  daysTrained  Int // Exemplo: quantos dias treinou na semana
+  workoutsDone Int // Número de treinos realizados na semana
+  workout      Workout  @relation(fields: [workoutId], references: [id])
+  userId       String?
+  User         User?    @relation(fields: [userId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
